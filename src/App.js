@@ -20,7 +20,7 @@ import {
   Testimonial,
 } from "./pages/index";
 import Login from "./pages/user/Login";
-import Dashboard from "./pages/user/dashboard.js"
+import Dashboard from "./pages/user/dashboard.jsx"
 import BookRoom from "./pages/user/bookroom.js";
 import BookResturant from "./pages/user/bookresturant.js";
 import Footer from "./components/common/Footer";
