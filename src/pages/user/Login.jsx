@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-
+import { useNavigate } from 'react-router-dom';
 const Container = styled.div`
     display: flex;
     flex-direction: column;
@@ -59,6 +59,7 @@ const LoginButton = styled.button`
 `;
 
 function Login() {
+    const navigate = useNavigate()
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
@@ -75,7 +76,7 @@ function Login() {
             });
 
             if (response.ok) {
-                window.location.href = "/user/dashboard";
+                navigate('/user/dashboard')
             } else {
                 setErrorMessage("Email or password is incorrect");
             }
