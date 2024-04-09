@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import axios from 'axios' ;
 
 function BookRoom() {
     const [rooms, setRooms] = useState([]);
@@ -52,39 +53,63 @@ function BookRoom() {
         setShowDialog(false);
     };
 
-    const handleBookingConfirm = () => {
+    const handleBookingConfirm = async () => {
         const formattedDate = selectedDate.toISOString();
-        const bookingData = {
-            email: email,
-            roomNumber: selectedRoom,
-            bookedOn: formattedDate
-        };
+        // const bookingData = {
+        //     email: email,
+        //     roomNumber: selectedRoom,
+        //     bookedOn: formattedDate
+        // };
+        try {
+            const response = await axios.put('https://hotelease.onrender.com/user/book-room', {
+                'roomNumber': selectedRoom,
+                'bookedOn': formattedDate,
+                'email': email
+            });
+            console.log(response )
+            if (response && response.data && response.data.success) {
+                setBookingStatus(response.data.success.toUpperCase());
+            }
+        } catch (error) {
+            if (error.response && error.response.data && error.response.data.failure) {
+                setBookingStatus(error.response.data.failure.toUpperCase());
+            }
+            if (error.response && error.response.data && error.response.data.error) {
+                setBookingStatus(error.response.data.error.toUpperCase());
+            }
+            else {
+                setBookingStatus('Failed to book room. Please try again later.');
+            }
+        }
+        
+        // if(response.status === 200) {
+        //     setBookingStatus(response.data.success);
+        // }
 
-        fetch("https://hotelease.onrender.com/user/book-room", {
-            method: "PUT",
-            body: JSON.stringify(bookingData),
-            headers: {
-                "Content-Type": "application/json"
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log(data?.failure.failure);
-            if(data.success){
-                setBookingStatus("success");
-            }
-            else if(data.failure || data.error){
-                setBookingStatus("failure");
-            }
-            setTimeout(()=>setBookingStatus(null),5000);
+        // fetch("https://hotelease.onrender.com/user/book-room", {
+        //     method: "PUT",
+        //     body: JSON.stringify(bookingData),
+        //     headers: {
+        //         "Content-Type": "application/json"
+        //     }
+        // })
+        // console.log(response);
+        // .then(response => response.json())
+        // .then(data => {
+        //     if(data && data.success){
+        //         setBookingStatus("success");
+        //     } else if(data && (data.failure || data.error)){
+        //         setBookingStatus("failure");
+        //     }
+        //     setTimeout(()=>setBookingStatus(null),5000);
             
-        })
-        .catch(error => {
-            console.error("Error booking room:", error);
-            setBookingStatus("failure");
-            setTimeout(()=>setBookingStatus(null),5000);
+        // })
+        // .catch(error => {
+        //     console.error("Error booking room:", error);
+        //     setBookingStatus("failure");
+        //     setTimeout(()=>setBookingStatus(null),5000);
             
-        });
+        // });
     };
     
     return (
@@ -125,7 +150,7 @@ function BookRoom() {
                             <button onClick={handleDialogClose} style={{ backgroundColor: "#ccc", color: "#fff", border: "none", padding: "10px 20px", borderRadius: "5px", margin: "10px", cursor: "pointer" }}>Cancel</button>
                         </div>
                         {bookingStatus && (
-                            <p style={{ color: bookingStatus === "success" ? "green" : "red" }}>{bookingStatus === "success" ? "Room successfully booked!" : "Failed to book room. Please try again later."}</p>
+                            <p style={{ color: bookingStatus === "success" ? "green" : "red" }}>{bookingStatus}</p>
                         )}
                     </div>
                 </div>
