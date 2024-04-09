@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import axios from 'axios'
 
 function BookRestaurant() {
     const [tables, setTables] = useState([]);
@@ -52,39 +53,31 @@ function BookRestaurant() {
         setShowDialog(false);
     };
 
-    const handleBookingConfirm = () => {
+    const handleBookingConfirm = async () => {
         const formattedDate = selectedDate.toISOString();
         const bookingData = {
-            email: email,
-            tableNumber: selectedTable,
-            bookedOn: formattedDate
+            "email": email,
+            "tableNumber": selectedTable,
+            "bookedOn": formattedDate
         };
 
-        fetch("https://hotelease.onrender.com/user/book-restaurant", {
-            method: "PUT",
-            body: JSON.stringify(bookingData),
-            headers: {
-                "Content-Type": "application/json"
+        try {
+            const response = await axios.put('https://hotelease.onrender.com/user/book-restaurant',bookingData);
+            console.log(response )
+            if (response && response.data && response.data.success) {
+                setBookingStatus(response.data.success.toUpperCase());
             }
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log(data?.failure.failure);
-            if(data.success){
-                setBookingStatus("success");
+        } catch (error) {
+            if (error.response && error.response.data && error.response.data.failure) {
+                setBookingStatus(error.response.data.failure.toUpperCase());
             }
-            else if(data.failure || data.error){
-                setBookingStatus("failure");
+            if (error.response && error.response.data && error.response.data.error) {
+                setBookingStatus(error.response.data.error.toUpperCase());
             }
-            setTimeout(()=>setBookingStatus(null),5000);
-            
-        })
-        .catch(error => {
-            console.error("Error booking Table:", error);
-            setBookingStatus("failure");
-            setTimeout(()=>setBookingStatus(null),5000);
-            
-        });
+            else {
+                setBookingStatus('Failed to book room. Please try again later.');
+            }
+        }
     };
     
     return (
@@ -125,7 +118,7 @@ function BookRestaurant() {
                             <button onClick={handleDialogClose} style={{ backgroundColor: "#ccc", color: "#fff", border: "none", padding: "10px 20px", borderRadius: "5px", margin: "10px", cursor: "pointer" }}>Cancel</button>
                         </div>
                         {bookingStatus && (
-                            <p style={{ color: bookingStatus === "success" ? "green" : "red" }}>{bookingStatus === "success" ? "Table successfully booked!" : "Failed to book Table. Please try again later."}</p>
+                            <p style={{ color: bookingStatus === "success" ? "green" : "red" }}>{bookingStatus}</p>
                         )}
                     </div>
                 </div>
